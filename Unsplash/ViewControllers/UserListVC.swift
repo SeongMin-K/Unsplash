@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  UserListVC.swift
 //  Unsplash
 //
 //  Created by SeongMinK on 2021/09/29.
@@ -7,13 +7,11 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-
+class UserListVC: BaseVC {
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        print("UserListVC - viewDidLoad() called")
     }
-
-
 }
-
