@@ -7,8 +7,9 @@
 
 import UIKit
 import Toast_Swift
+import Alamofire
 
-class HomeVC: UIViewController, UISearchBarDelegate, UIGestureRecognizerDelegate {
+class HomeVC: BaseVC, UISearchBarDelegate, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var searchFilterSegment: UISegmentedControl!
     @IBOutlet weak var searchBar: UISearchBar!
@@ -131,8 +132,41 @@ class HomeVC: UIViewController, UISearchBarDelegate, UIGestureRecognizerDelegate
     @IBAction func onSearchBtnClicked(_ sender: UIButton) {
         print("HomeVC - onSearchBtnClicked() called / index: \(searchFilterSegment.selectedSegmentIndex)")
         
+//        let url = API.BASE_URL + "search/photos"
+        
+        guard let userInput = self.searchBar.text else { return }
+        
+        // key : value 형식의 딕셔너리
+//        let queryParam = ["query" : userInput, "client_id" : API.CLIENT_ID]
+        
+//        AF.request(url, method: .get, parameters: queryParam).responseJSON(completionHandler: { response in
+//            debugPrint(response)
+//        })
+        
+        var urlToCall: URLRequestConvertible?
+        
+        switch searchFilterSegment.selectedSegmentIndex {
+        case 0:
+            urlToCall = SearchRouter.searchPhotos(term: userInput)
+        case 1:
+            urlToCall = SearchRouter.searchUsers(term: userInput)
+        default:
+            print("default")
+        }
+
+        if let urlConvertible = urlToCall {
+            AlamofireManager
+                .shared
+                .session
+                .request(SearchRouter.searchPhotos(term: userInput))
+                .validate(statusCode: 200..<401)
+                .responseJSON(completionHandler: { response in
+                    debugPrint(response)
+                })
+        }
+        
         // 화면 이동
-        pushVC()
+//        pushVC()
     }
     
     @IBAction func searchFilterValueChanged(_ sender: UISegmentedControl) {
