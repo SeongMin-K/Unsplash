@@ -132,41 +132,38 @@ class HomeVC: BaseVC, UISearchBarDelegate, UIGestureRecognizerDelegate {
     @IBAction func onSearchBtnClicked(_ sender: UIButton) {
         print("HomeVC - onSearchBtnClicked() called / index: \(searchFilterSegment.selectedSegmentIndex)")
         
-//        let url = API.BASE_URL + "search/photos"
-        
         guard let userInput = self.searchBar.text else { return }
-        
-        // key : value 형식의 딕셔너리
-//        let queryParam = ["query" : userInput, "client_id" : API.CLIENT_ID]
-        
-//        AF.request(url, method: .get, parameters: queryParam).responseJSON(completionHandler: { response in
-//            debugPrint(response)
-//        })
         
         var urlToCall: URLRequestConvertible?
         
         switch searchFilterSegment.selectedSegmentIndex {
         case 0:
-            urlToCall = SearchRouter.searchPhotos(term: userInput)
+//            urlToCall = SearchRouter.searchPhotos(term: userInput)
+            AlamofireManager
+                .shared
+                .getPhotos(searchTerm: userInput,
+                           // 클로저 Automatic Reference Count
+                           // 자동 메모리 사용 수 계산
+                           // Stack, Heap 메모리 영역, Class, Closure 등이 사용
+                           // self는 메모리 카운트를 증가
+                           // weak self를 사용하여 메모리를 계속 가지고 있는 것을 방지
+                           completion: { [weak self] result in
+                    
+                    guard let self = self else { return }
+                    
+                    switch result {
+                    case .success(let fetchedPhotos):
+                        print("HomeVC - getPhotos.success - fetchedPhotos.count: \(fetchedPhotos.count)")
+                    case .failure(let error):
+                        print("HomeVC - getPhotos.failure - error: \(error.rawValue)")
+                        self.view.makeToast(error.rawValue, duration: 1.0, position: .center)
+                    }
+            })
         case 1:
             urlToCall = SearchRouter.searchUsers(term: userInput)
         default:
             print("default")
         }
-
-        if let urlConvertible = urlToCall {
-            AlamofireManager
-                .shared
-                .session
-                .request(SearchRouter.searchPhotos(term: userInput))
-                .validate(statusCode: 200..<401)
-                .responseJSON(completionHandler: { response in
-                    debugPrint(response)
-                })
-        }
-        
-        // 화면 이동
-//        pushVC()
     }
     
     @IBAction func searchFilterValueChanged(_ sender: UISegmentedControl) {
